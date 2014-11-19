@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "jshint . && mocha ./test/npm ./test/unit",
-    "install": "cp -u config.json.template config.json",
+    "install": "cp -n config.json.template config.json",
     "start": "node server.js"
   },
   "repository": {
