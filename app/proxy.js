@@ -4,7 +4,7 @@ var request = require('request')
   , config = require('../config')
   , url = require('url')
   , cache = require('../lib/cache')
-  , proxy = process.env.PROXY || config.proxy
+  , proxy = config('proxy')
   , REGISTRY = config('registry')
   ;
 
@@ -24,14 +24,25 @@ var replaceTarballUrls = function (obj) {
 exports.metadata = function (req, res) {
   cache.get(req.params.pkg, function (err, doc) {
     if (err) {
-      request(REGISTRY + req.path, function (err, proxy, body) {
-        body = JSON.parse(body);
-        // forward npmjs errors
-        if (!body.error) {
-          replaceTarballUrls(body);
-          cache.put(body._id, body);
+      request(REGISTRY + req.path, function (err, proxy, b) {
+        if (err) {
+          res.status(500).json(err);
+        } else {
+          try {
+            var body = JSON.parse(b);
+            // forward npmjs errors
+            if (!body.error) {
+              replaceTarballUrls(body);
+              cache.put(body._id, body);
+            }
+            res.status(proxy.statusCode).set(proxy.headers).json(body);
+          } catch (e) {
+            res.status(500).json({
+              error: e.message,
+              body: b
+            });
+          }
         }
-        res.status(proxy.statusCode).set(proxy.headers).json(body);
       });
     } else {
       req.log('getting ' + req.params.pkg + ' from cache...');
