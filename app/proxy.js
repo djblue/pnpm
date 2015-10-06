@@ -55,7 +55,9 @@ exports.tarball = function (req, res) {
   cache.get(req.params.tar, function (err, body) {
     if (err) {
       request(REGISTRY + req.path, { encoding: null }, function (err, resp, body) {
-        cache.put(req.params.tar, body);
+        if (resp.statusCode === 200) {
+          cache.put(req.params.tar, body);
+        }
       }).pipe(res);
     } else {
       req.log('getting ' + req.params.tar + ' from cache...');
