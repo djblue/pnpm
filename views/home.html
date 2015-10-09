@@ -19,7 +19,7 @@ available local packages.</p>
 <% for (var key in packages) { var package = packages[key] %>
 <li>
   <p>
-    <a href="/package/<%= package.name %>"><%= package.name %></a>
+    <a href="/package/<%= package.name.replace('/', '%2f') %>"><%= package.name %></a>
       (<%= package['dist-tags'].latest %>): <%= package.description %>
   </p>
 </li>

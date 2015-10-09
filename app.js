@@ -39,7 +39,26 @@ module.exports = function () {
 
   // all environments
   app.set('env', process.env.NODE_ENV || 'development');
-
+  
+  var fixPrivatePackages = function(req) {
+    
+  };
+  
+  // fix private package names
+  app.use(function (req, res, next) {
+    var match = /^\/(@[a-zA-Z0-9-\.]+)\/([a-zA-Z0-9-\.]+)$/.exec(req.url);
+    if (match) {
+      req.url = '/' + match[1] + '%2f' + match[2];
+    }
+    
+    match = /^\/(@[a-zA-Z0-9-\.]+)\/([a-zA-Z0-9-\.]+)\/-\/(@[a-zA-Z0-9-\.]+)\/([a-zA-Z0-9-\.]+)-([0-9]+\.[0-9]+\.[0-9]+\.tgz)$/.exec(req.url);
+    if (match) {
+      req.url = '/' + match[1] + '%2f' + match[2] + '/-/' + match[3] + '%2f' + match[4] + '-' + match[5];
+    }
+    
+    next();
+  });
+  
   // setup server logging with morgan.js
   app.use(function (req, res, next) {
     var logs = [];

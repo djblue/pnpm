@@ -4,14 +4,23 @@ var proxy = require('./proxy')
   , packages = require('../lib/package')
   ;
 
+var isScoped = function(name) {
+  return /^@[^\/]+\//.test(name);
+};
+
 exports.setup = function (app) {
 
   app.get('/:pkg', function (req, res, next) {
     packages.one(req.params.pkg, function (err, pkg) {
       if (err) {
         next();
-      } else {
+      } else if (pkg) {
         res.json(pkg);
+      } else if (isScoped(req.params.pkg)) {
+        res.status(404).json({
+          error:'not_found', 
+          reason:'document not found'
+        });
       }
     });
   }, proxy.metadata);
@@ -41,8 +50,13 @@ exports.setup = function (app) {
     packages.tar(req.params.pkg, req.params.tar, function (err, tar) {
       if (err) {
         next();
-      } else {
+      } else if (tar) {
         res.send(tar).end();
+      } else if (isScoped(req.params.pkg)) {
+        res.status(404).json({
+          error:'not_found', 
+          reason:'document not found'
+        });
       }
     });
   }, proxy.tarball);
